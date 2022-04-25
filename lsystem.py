@@ -62,15 +62,18 @@ class LSystem():
 
 
 
-    def run(self):
+    def run(self, output_dir ,image_name):
         model = self.derivation()  #axiom (initial string), nth iterations 
         self.SYSTEM_RULES = model[-1]  # last iteration
         # Set turtle parameters and draw L-System
         r_turtle = self.set_turtle()  # create turtle object
         self.draw_l_system(r_turtle)  # draw model
-        r_turtle.save_as("lsystem.svg")  # save as svg file
-        svg2png("lsystem.svg", "lsystem.png")  # convert to png file
-        crop_image("lsystem.png")
+        # Save image
+        svg_file_path = f"{output_dir}/{image_name}/{image_name}.svg"
+        png_file_path = f"{output_dir}/{image_name}/{image_name}.png"
+        r_turtle.save_as(svg_file_path)  # save as svg file
+        svg2png(svg_file_path, png_file_path)  # convert to png file
+        crop_image(png_file_path)  # crop image
 
 
 def crop_image(image_path):
