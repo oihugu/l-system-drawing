@@ -1,18 +1,20 @@
 from PIL import Image
 import numpy as np
 from svg_turtle import SvgTurtle as Turtle
-from cairosvg import svg2png
-
+from svglib.svglib import svg2rlg
+from reportlab.graphics import renderPM
+import os
 
 class LSystem():
 
-    def __init__(self, rules, axiom, iterations, segment_length, alpha_zero, angle) -> None:
+    def __init__(self, rules, axiom, iterations, segment_length, alpha_zero, angle, image_size) -> None:
         self.SYSTEM_RULES = rules  # generator system rules for l-system
         self.axiom = axiom  # self.axiom (initial string)
         self.iterations = iterations  # number of self.iterations
         self.seg_length = segment_length
         self.alpha_zero = alpha_zero
         self.angle = angle
+        self.image_size = image_size
 
 
     def derivation(self):
@@ -53,7 +55,7 @@ class LSystem():
 
 
     def set_turtle(self):
-        r_turtle = Turtle(2500,2500)  # recursive turtle
+        r_turtle = Turtle(*self.image_size)  # recursive turtle
         r_turtle.screen.title("L-System Derivation")
         r_turtle.speed(0)  # adjust as needed (0 = fastest)
         r_turtle.setheading(self.alpha_zero)  # initial heading
@@ -63,32 +65,28 @@ class LSystem():
 
 
     def run(self, output_dir ,image_name):
+        if not os.path.exists(f'{output_dir}/{image_name}'):
+            os.mkdir(f'{output_dir}/{image_name}')
         model = self.derivation()  #axiom (initial string), nth iterations 
         self.SYSTEM_RULES = model[-1]  # last iteration
         # Set turtle parameters and draw L-System
         r_turtle = self.set_turtle()  # create turtle object
+        r_turtle.width(10)
         self.draw_l_system(r_turtle)  # draw model
         # Save image
         svg_file_path = f"{output_dir}/{image_name}/{image_name}.svg"
         png_file_path = f"{output_dir}/{image_name}/{image_name}.png"
+        #cut_png_file_path = f"{output_dir}/{image_name}/C_{image_name}.png"
         r_turtle.save_as(svg_file_path)  # save as svg file
-        svg2png(svg_file_path, png_file_path)  # convert to png file
-        crop_image(png_file_path)  # crop image
+        drawing = svg2rlg(svg_file_path)
+        drawing.scale(600/72, 600/72)
+        renderPM.drawToFile(drawing, png_file_path, fmt="PNG", dpi=600)
+        #crop_image(png_file_path, cut_png_file_path)  # crop image
 
 
 def crop_image(image_path):
     # crop image to remove white space
-    # https://stackoverflow.com/questions/14211340/automatically-cropping-an-image-with-python-pil
-    image=Image.open(image_path)
-    image.load()
+    pass
+    
 
-    image_data = np.asarray(image)
-    image_data_bw = image_data.max(axis=2)
-    non_empty_columns = np.where(image_data_bw.max(axis=0)>0)[0]
-    non_empty_rows = np.where(image_data_bw.max(axis=1)>0)[0]
-    cropBox = (min(non_empty_rows), max(non_empty_rows), min(non_empty_columns), max(non_empty_columns))
-
-    image_data_new = image_data[cropBox[0]:cropBox[1]+1, cropBox[2]:cropBox[3]+1 , :]
-
-    new_image = Image.fromarray(image_data_new)
-    new_image.save(image_path)
+    
