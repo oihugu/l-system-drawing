@@ -4,6 +4,7 @@ from svg_turtle import SvgTurtle as Turtle
 from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 import os
+import cv2
 
 class LSystem():
 
@@ -81,7 +82,9 @@ class LSystem():
         drawing = svg2rlg(svg_file_path)
         drawing.scale(600/72, 600/72)
         renderPM.drawToFile(drawing, png_file_path, fmt="PNG", dpi=600)
-        #crop_image(png_file_path, cut_png_file_path)  # crop image
+        img = cv2.imread(png_file_path)
+        img = img[0:6250, 2000:2000+6250]
+        cv2.imwrite(png_file_path, img)
 
 
 def crop_image(image_path):
