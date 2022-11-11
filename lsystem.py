@@ -5,6 +5,7 @@ from svglib.svglib import svg2rlg
 from reportlab.graphics import renderPM
 import os
 import cv2
+import json
 
 class LSystem():
 
@@ -35,25 +36,34 @@ class LSystem():
 
     def draw_l_system(self, turtle):
         stack = []
+        commands = []
         for command in self.SYSTEM_RULES:
             turtle.pd()
             if command in ["F", "G", "R", "L"]:
                 turtle.forward(self.seg_length)
             elif command == "f":
-                turtle.pu()  # pen up - not drawing
-                turtle.forward(self.seg_length)
+                commands.append({'pen_up': 0})
+                commands.append({'foward': 0})
+                #turtle.pu()  # pen up - not drawing
+                #turtle.forward(self.seg_length)
             elif command == "+":
-                turtle.right(self.angle)
+                commands.append({'right': self.angle})
+                #turtle.right(self.angle)
             elif command == "-":
-                turtle.left(self.angle)
+                commands.append({'left': self.angle})
+                #turtle.left(self.angle)
             elif command == "[":
-                stack.append((turtle.position(), turtle.heading()))
+                commands.append({'stack_append': (turtle.position(), turtle.heading())})
+                #stack.append((turtle.position(), turtle.heading()))
             elif command == "]":
-                turtle.pu()  # pen up - not drawing
-                position, heading = stack.pop()
-                turtle.goto(position)
-                turtle.setheading(heading)
-
+                commands.append({'pen_up': 0})
+                commands.append({'stack_pop': 0})
+                #turtle.pu()  # pen up - not drawing
+                #position, heading = stack.pop()
+                #turtle.goto(position)
+                #turtle.setheading(heading)
+        with open('../temp/l_sys_draw.json', 'w') as file: 
+            file.write(json.dumps(commands))
 
     def set_turtle(self):
         r_turtle = Turtle(*self.image_size)  # recursive turtle
